@@ -1,0 +1,12 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "name": "jobRequest",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "stampy-jobs",
+      "connection": "StampyStorageConnectionString"
+    }
+  ]
+}
