@@ -6,6 +6,7 @@
 
 public class StampyParameters{
     
+    public string RequestId{ get;set; }
     public StampyJobType JobType{ get; set; }
     public string BuildPath{ get; set; }
     public string DeploymentTemplate{ get; set; }

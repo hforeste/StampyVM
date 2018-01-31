@@ -79,13 +79,24 @@ public class DeploymentExecutor : ExecutorBase
     private void ErrorReceived(object sender, DataReceivedEventArgs e){
         if (!string.IsNullOrWhiteSpace(e.Data))
         {
-            Logger.Error(e.Data);
+            Write(e.Data);
         }
     }
 
     private void OutputReceived(object sender, DataReceivedEventArgs e){
         if(!string.IsNullOrWhiteSpace(e.Data)){
-            Logger.Info(e.Data);
+            Write(e.Data);
+        }
+    }
+
+    private void Write(string line){
+        var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
+        var logFilePath = Path.Combine(jobDirectory, $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}.log");
+        if(!Directory.Exists(jobDirectory)){
+            Directory.CreateDirectory(jobDirectory);
+        }
+        using(var streamWriter = new StreamWriter(File.Open(logFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))){
+            streamWriter.WriteLine(line);
         }
     }
 }
