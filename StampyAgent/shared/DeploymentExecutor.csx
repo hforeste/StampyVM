@@ -63,6 +63,8 @@ public class DeploymentExecutor : ExecutorBase
         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
         processStartInfo.RedirectStandardError = true;
 
+        Logger.Info($"Start {processStartInfo.FileName} {processStartInfo.Arguments}");
+
         try{
             using(var deployProcess = Process.Start(processStartInfo))
             {
