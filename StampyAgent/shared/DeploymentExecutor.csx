@@ -40,6 +40,9 @@ public class DeploymentExecutor : ExecutorBase
     public DeploymentExecutor(StampyParameters stampyParameters) : base(stampyParameters){}
 
     public override void Execute(){
+        var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
+        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}.log");
+        var tempDirectory = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}");
 
         if (!AvailableDeploymentTemplates.Contains(StampyParameters.DeploymentTemplate))
         {
@@ -55,48 +58,30 @@ public class DeploymentExecutor : ExecutorBase
         
         var processStartInfo = new ProcessStartInfo();
         processStartInfo.FileName = DeployConsolePath;
-        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={Path.Combine(Path.GetTempPath(), StampyParameters.CloudName)} /AutoRetry=true";
+        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={tempDirectory} /AutoRetry=true /LogFile={logFilePath}";
         processStartInfo.UseShellExecute = false;
         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-        processStartInfo.RedirectStandardOutput = true;
         processStartInfo.RedirectStandardError = true;
 
         try{
             using(var deployProcess = Process.Start(processStartInfo))
             {
-                deployProcess.BeginOutputReadLine();
                 deployProcess.BeginErrorReadLine();
                 deployProcess.ErrorDataReceived += new DataReceivedEventHandler(ErrorReceived);
-                deployProcess.OutputDataReceived += new DataReceivedEventHandler(OutputReceived);
                 deployProcess.WaitForExit();
             }            
         }catch(Exception e){
             Logger.Error(e.Message, e);
             throw;
         }
+
+        Logger.Info("Finished deployment...");
     }
 
     private void ErrorReceived(object sender, DataReceivedEventArgs e){
         if (!string.IsNullOrWhiteSpace(e.Data))
         {
-            Write(e.Data);
-        }
-    }
-
-    private void OutputReceived(object sender, DataReceivedEventArgs e){
-        if(!string.IsNullOrWhiteSpace(e.Data)){
-            Write(e.Data);
-        }
-    }
-
-    private void Write(string line){
-        var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
-        var logFilePath = Path.Combine(jobDirectory, $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}.log");
-        if(!Directory.Exists(jobDirectory)){
-            Directory.CreateDirectory(jobDirectory);
-        }
-        using(var streamWriter = new StreamWriter(File.Open(logFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))){
-            streamWriter.WriteLine(line);
+            Logger.Error(e.Data);
         }
     }
 }
