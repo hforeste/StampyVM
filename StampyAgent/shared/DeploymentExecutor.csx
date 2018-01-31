@@ -44,6 +44,10 @@ public class DeploymentExecutor : ExecutorBase
         var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}.log");
         var tempDirectory = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}");
 
+        if(!Directory.Exists(jobDirectory)){
+            Directory.CreateDirectory(Directory.GetParent(logFilePath).FullName);
+        }
+
         if (!AvailableDeploymentTemplates.Contains(StampyParameters.DeploymentTemplate))
         {
             Logger.Info($"Deployment template `{StampyParameters.DeploymentTemplate}` does not exist");
@@ -65,8 +69,9 @@ public class DeploymentExecutor : ExecutorBase
 
         Logger.Info($"Start {processStartInfo.FileName} {processStartInfo.Arguments}");
 
+        Process deployProcess;
         try{
-            using(var deployProcess = Process.Start(processStartInfo))
+            using(deployProcess = Process.Start(processStartInfo))
             {
                 deployProcess.BeginErrorReadLine();
                 deployProcess.ErrorDataReceived += new DataReceivedEventHandler(ErrorReceived);
@@ -75,6 +80,10 @@ public class DeploymentExecutor : ExecutorBase
         }catch(Exception e){
             Logger.Error(e.Message, e);
             throw;
+        }
+
+        if(deployProcess.ExitCode != 0){
+            Logger.Error("Error while executing deployconsole.exe");
         }
 
         Logger.Info("Finished deployment...");
