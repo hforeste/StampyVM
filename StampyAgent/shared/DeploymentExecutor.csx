@@ -41,8 +41,8 @@ public class DeploymentExecutor : ExecutorBase
 
     public override void Execute(){
         var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
-        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}.log");
-        var tempDirectory = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate}");
+        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+        var tempDirectory = Path.GetTempPath();
 
         if(!Directory.Exists(jobDirectory)){
             Directory.CreateDirectory(Directory.GetParent(logFilePath).FullName);
