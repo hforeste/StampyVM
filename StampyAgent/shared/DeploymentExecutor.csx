@@ -6,6 +6,7 @@
 #load "ExecutorBase.csx"
 #load "Logger.csx"
 #load "StampyParameters.csx"
+#load "StampyResult.csx"
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -39,9 +40,9 @@ public class DeploymentExecutor : ExecutorBase
 
     public DeploymentExecutor(StampyParameters stampyParameters) : base(stampyParameters){}
 
-    public override void Execute(){
+    public override StampyResult Execute(){
         var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
-        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}_{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.h{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
         var tempDirectory = Path.GetTempPath();
 
         if(!Directory.Exists(jobDirectory)){
@@ -87,6 +88,8 @@ public class DeploymentExecutor : ExecutorBase
         }
 
         Logger.Info("Finished deployment...");
+
+        return null;
     }
 
     private void ErrorReceived(object sender, DataReceivedEventArgs e){

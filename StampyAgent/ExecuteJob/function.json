@@ -7,6 +7,13 @@
       "direction": "in",
       "queueName": "stampy-jobs",
       "connection": "StampyStorageConnectionString"
+    },
+    {
+      "name": "$return",
+      "type": "queue",
+      "direction": "out",
+      "queueName": "stampy-jobs-finished",
+      "connection": "StampyStorageConnectionString"
     }
   ]
 }

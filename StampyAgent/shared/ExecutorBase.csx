@@ -4,6 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 #load "StampyParameters.csx"
+#load "StampyResult.csx"
 
 public abstract class ExecutorBase
 {
@@ -14,5 +15,5 @@ public abstract class ExecutorBase
         this.StampyParameters = stampyParameters;
     }
 
-    public abstract void Execute();
+    public abstract StampyResult Execute();
 }
