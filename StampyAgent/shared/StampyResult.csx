@@ -11,4 +11,5 @@ public class StampyResult {
     public string DeploymentTemplate{ get; set; }
     public string CloudName {get; set; }
     public JobResult Result {get;set;}
+    public string StatusMessage {get;set;}
 }
