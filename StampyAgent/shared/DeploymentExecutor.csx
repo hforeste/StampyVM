@@ -11,10 +11,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 public class DeploymentExecutor : ExecutorBase
 {
     private StampyResult _stampyResult;
+    private StringBuilder _statusMessageBuilder;
     private List<string> _availableDeploymentTemplates;
     private List<string> AvailableDeploymentTemplates
     {
@@ -46,12 +48,15 @@ public class DeploymentExecutor : ExecutorBase
         _stampyResult.CloudName = StampyParameters.CloudName;
         _stampyResult.DeploymentTemplate = StampyParameters.DeploymentTemplate;
         _stampyResult.RequestId = StampyParameters.RequestId;
+        _statusMessageBuilder = new StringBuilder();
     }
 
     public override StampyResult Execute(){
         var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
         var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
         var tempDirectory = Path.Combine(Path.GetTempPath(), "DeployConsole", StampyParameters.CloudName);
+        bool throwException = false;
+        string exceptionMessage = "";
 
         if(!Directory.Exists(jobDirectory)){
             Directory.CreateDirectory(Directory.GetParent(logFilePath).FullName);
@@ -94,11 +99,18 @@ public class DeploymentExecutor : ExecutorBase
 
         if(deployProcess.ExitCode != 0){
             _stampyResult.Result = JobResult.Failed;
+            _stampyResult.StatusMessage = _statusMessageBuilder.ToString();
             Logger.Error("Error while executing deployconsole.exe");
-            _stampyResult.StatusMessage = "Error while executing deployconsole.exe";
+            Logger.Error(_stampyResult.StatusMessage);
+            throwException = true;
+            exceptionMessage = _stampyResult.StatusMessage;           
         }
 
         deployProcess.Dispose();
+
+        if(throwException){
+            throw new Exception(exceptionMessage);
+        }
 
         Logger.Info("Finished deployment...");
 
@@ -120,7 +132,7 @@ public class DeploymentExecutor : ExecutorBase
     private void ErrorReceived(object sender, DataReceivedEventArgs e){
         if (!string.IsNullOrWhiteSpace(e.Data))
         {
-            _stampyResult.StatusMessage = e.Data;
+            _statusMessageBuilder.AppendLine(e.Data);
         }
     }
 }
