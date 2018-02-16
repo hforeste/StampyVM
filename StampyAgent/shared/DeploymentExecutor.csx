@@ -42,6 +42,38 @@ public class DeploymentExecutor : ExecutorBase
         }
     }
 
+    private string _jobDirectory
+    {
+        get
+        {
+            return Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId);
+        }
+    }
+
+    private string _azureLogFilePath
+    {
+        get
+        {
+            return Path.Combine(_jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+        }
+    }
+
+    private string _deploymentArtificatsDirectory
+    {
+        get
+        {
+            return Path.Combine(Path.GetTempPath(), "DeployConsole", StampyParameters.CloudName);
+        }
+    }
+
+    private string _logFilePath
+    {
+        get
+        {
+            return Path.Combine(_deploymentArtificatsDirectory, $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+        }
+    }
+
     public DeploymentExecutor(StampyParameters stampyParameters) : base(stampyParameters){
         _stampyResult = new StampyResult();
         _stampyResult.BuildPath = StampyParameters.BuildPath;
@@ -52,14 +84,11 @@ public class DeploymentExecutor : ExecutorBase
     }
 
     public override StampyResult Execute(){
-        var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId); 
-        var logFilePath = Path.Combine(jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "DeployConsole", StampyParameters.CloudName);
         bool throwException = false;
         string exceptionMessage = "";
 
-        if(!Directory.Exists(jobDirectory)){
-            Directory.CreateDirectory(Directory.GetParent(logFilePath).FullName);
+        if(!Directory.Exists(_jobDirectory)){
+            Directory.CreateDirectory(Directory.GetParent(_logFilePath).FullName);
         }
 
         if (!AvailableDeploymentTemplates.Contains(StampyParameters.DeploymentTemplate))
@@ -76,7 +105,7 @@ public class DeploymentExecutor : ExecutorBase
         
         var processStartInfo = new ProcessStartInfo();
         processStartInfo.FileName = DeployConsolePath;
-        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={tempDirectory} /AutoRetry=true /LogFile={logFilePath}";
+        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={_deploymentArtificatsDirectory} /AutoRetry=true /LogFile={_logFilePath}";
         processStartInfo.UseShellExecute = false;
         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
         processStartInfo.RedirectStandardError = true;
@@ -122,10 +151,12 @@ public class DeploymentExecutor : ExecutorBase
             if(e.Data.Equals($"Deploy to {StampyParameters.CloudName} failed", StringComparison.CurrentCultureIgnoreCase)){
                 _stampyResult.Result = JobResult.Failed;
             }
-            
-            if(e.Data.Contains("Total Time for Template")){
+            else if(e.Data.Contains("Total Time for Template")){
                 _stampyResult.Result = JobResult.Passed;
             }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(_azureLogFilePath));
+            File.AppendAllText(_azureLogFilePath, e.Data, Encoding.UTF8);
         }
     }
 
