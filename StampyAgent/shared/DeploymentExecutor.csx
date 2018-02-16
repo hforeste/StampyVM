@@ -70,7 +70,7 @@ public class DeploymentExecutor : ExecutorBase
     {
         get
         {
-            return Path.Combine(_deploymentArtificatsDirectory, $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+            return Path.Combine(Path.GetTempPath(), "DeployConsoleLogs", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
         }
     }
 
