@@ -46,7 +46,11 @@ public class DeploymentExecutor : ExecutorBase
     {
         get
         {
-            return Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId);
+            var jobDirectory = Path.Combine(Environment.GetEnvironmentVariable("StampyJobResultsDirectoryPath"), StampyParameters.RequestId);
+            if(!Directory.Exists(jobDirectory)){
+                Directory.CreateDirectory(Path.GetDirectoryName(jobDirectory));
+            }
+            return jobDirectory;
         }
     }
 
@@ -54,7 +58,12 @@ public class DeploymentExecutor : ExecutorBase
     {
         get
         {
-            return Path.Combine(_jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+            var logFilePath = Path.Combine(_jobDirectory, "devdeploy", $"{StampyParameters.CloudName}.{StampyParameters.DeploymentTemplate.Replace(".xml", string.Empty)}.log");
+            var logDirectory = Path.GetDirectoryName(logFilePath);
+            if(!Directory.Exists(logDirectory)){
+                Directory.CreateDirectory(logDirectory);
+            }
+            return logFilePath;
         }
     }
 
@@ -86,10 +95,6 @@ public class DeploymentExecutor : ExecutorBase
     public override StampyResult Execute(){
         bool throwException = false;
         string exceptionMessage = "";
-
-        if(!Directory.Exists(_jobDirectory)){
-            Directory.CreateDirectory(Directory.GetParent(_logFilePath).FullName);
-        }
 
         if (!AvailableDeploymentTemplates.Contains(StampyParameters.DeploymentTemplate))
         {
@@ -154,12 +159,14 @@ public class DeploymentExecutor : ExecutorBase
             else if(e.Data.Contains("Total Time for Template")){
                 _stampyResult.Result = JobResult.Passed;
             }
+            Logger.Info(e.Data);
         }
     }
 
     private void ErrorReceived(object sender, DataReceivedEventArgs e){
         if (!string.IsNullOrWhiteSpace(e.Data))
         {
+            Logger.Info(e.Data);
             _statusMessageBuilder.AppendLine(e.Data);
         }
     }
