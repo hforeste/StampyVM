@@ -105,7 +105,7 @@ public class DeploymentExecutor : ExecutorBase
         
         var processStartInfo = new ProcessStartInfo();
         processStartInfo.FileName = DeployConsolePath;
-        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={_deploymentArtificatsDirectory} /AutoRetry=true /LogFile={_logFilePath}";
+        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={_deploymentArtificatsDirectory} /AutoRetry=true /LogFile={_azureLogFilePath}";
         processStartInfo.UseShellExecute = false;
         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
         processStartInfo.RedirectStandardError = true;
@@ -154,9 +154,6 @@ public class DeploymentExecutor : ExecutorBase
             else if(e.Data.Contains("Total Time for Template")){
                 _stampyResult.Result = JobResult.Passed;
             }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(_azureLogFilePath));
-            File.AppendAllText(_azureLogFilePath, e.Data, Encoding.UTF8);
         }
     }
 
