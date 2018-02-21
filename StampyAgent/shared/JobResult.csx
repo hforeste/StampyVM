@@ -5,5 +5,5 @@
 //------------------------------------------------------------------------------
 
 public enum JobResult{
-    Cancelled, Failed, Passed,  
+    Cancelled, Failed, Passed, InProgress
 }

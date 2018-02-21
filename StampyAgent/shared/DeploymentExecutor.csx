@@ -159,7 +159,6 @@ public class DeploymentExecutor : ExecutorBase
             else if(e.Data.Contains("Total Time for Template")){
                 _stampyResult.Result = JobResult.Passed;
             }
-            Logger.Info(e.Data);
         }
     }
 
