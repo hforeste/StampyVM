@@ -3,21 +3,25 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
+#r "StampyCommon.dll"
 #load "ExecutorBase.csx"
 #load "Logger.csx"
-#load "StampyParameters.csx"
 #load "StampyResult.csx"
 #load "JobResult.csx"
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using StampyCommon;
+using StampyCommon.Loggers;
+using StampyCommon.SchedulerSettings;
 
 public class DeploymentExecutor : ExecutorBase
 {
     private StampyResult _stampyResult;
     private StringBuilder _statusMessageBuilder;
     private List<string> _availableDeploymentTemplates;
+    private IStampyClientLogger _logger;
     private List<string> AvailableDeploymentTemplates
     {
         get
@@ -83,13 +87,14 @@ public class DeploymentExecutor : ExecutorBase
         }
     }
 
-    public DeploymentExecutor(StampyParameters stampyParameters) : base(stampyParameters){
+    public DeploymentExecutor(StampyCommon.StampyParameters stampyParameters, IStampyClientLogger logger) : base(stampyParameters){
         _stampyResult = new StampyResult();
         _stampyResult.BuildPath = StampyParameters.BuildPath;
         _stampyResult.CloudName = StampyParameters.CloudName;
         _stampyResult.DeploymentTemplate = StampyParameters.DeploymentTemplate;
         _stampyResult.RequestId = StampyParameters.RequestId;
         _statusMessageBuilder = new StringBuilder();
+        _logger = logger;
     }
 
     public override StampyResult Execute(){
@@ -98,25 +103,25 @@ public class DeploymentExecutor : ExecutorBase
 
         if (!AvailableDeploymentTemplates.Contains(StampyParameters.DeploymentTemplate))
         {
-            Logger.Info($"Deployment template `{StampyParameters.DeploymentTemplate}` does not exist");
+            _logger.WriteInfo(StampyParameters, $"Deployment template `{StampyParameters.DeploymentTemplate}` does not exist");
         }
 
         if (!File.Exists(DeployConsolePath))
         {
-            Logger.Info($"Cannot find {DeployConsolePath}");
+            _logger.WriteInfo(StampyParameters, $"Cannot find {DeployConsolePath}");
         }
 
-        Logger.Info("Starting deployment...");
+        _logger.WriteInfo(StampyParameters, "Starting deployment...");
         
         var processStartInfo = new ProcessStartInfo();
         processStartInfo.FileName = DeployConsolePath;
-        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.HostingPath} /TempDir={_deploymentArtificatsDirectory} /AutoRetry=true /LogFile={_azureLogFilePath}";
+        processStartInfo.Arguments = $"/LockBox={StampyParameters.CloudName} /Template={StampyParameters.DeploymentTemplate} /BuildPath={StampyParameters.BuildPath + @"\Hosting"} /TempDir={_deploymentArtificatsDirectory} /AutoRetry=true /LogFile={_azureLogFilePath}";
         processStartInfo.UseShellExecute = false;
         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
         processStartInfo.RedirectStandardError = true;
         processStartInfo.RedirectStandardOutput = true;
 
-        Logger.Info($"Start {processStartInfo.FileName} {processStartInfo.Arguments}");
+        _logger.WriteInfo(StampyParameters, $"Start {processStartInfo.FileName} {processStartInfo.Arguments}");
 
         Process deployProcess;
         try{
@@ -127,15 +132,14 @@ public class DeploymentExecutor : ExecutorBase
             deployProcess.ErrorDataReceived += new DataReceivedEventHandler(ErrorReceived);
             deployProcess.WaitForExit();           
         }catch(Exception e){
-            Logger.Error(e.Message, e);
+            _logger.WriteError(StampyParameters, "Failed while running deployment process", e);
             throw;
         }
 
         if(deployProcess.ExitCode != 0){
             _stampyResult.Result = JobResult.Failed;
             _stampyResult.StatusMessage = _statusMessageBuilder.ToString();
-            Logger.Error("Error while executing deployconsole.exe");
-            Logger.Error(_stampyResult.StatusMessage);
+            _logger.WriteInfo(StampyParameters, "Error while executing deployconsole.exe " + _stampyResult.StatusMessage);
             throwException = true;
             exceptionMessage = _stampyResult.StatusMessage;           
         }
@@ -146,7 +150,7 @@ public class DeploymentExecutor : ExecutorBase
             throw new Exception(exceptionMessage);
         }
 
-        Logger.Info("Finished deployment...");
+        _logger.WriteInfo(StampyParameters, "Finished deployment...");
 
         return _stampyResult;
     }
