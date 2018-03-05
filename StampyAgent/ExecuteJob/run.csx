@@ -10,7 +10,7 @@ using StampyCommon.SchedulerSettings;
 
 public static StampyResult Run(StampyCommon.StampyParameters jobRequest, TraceWriter log)
 {
-    var configuration = new SchedulerConfiguration(null);
+    var configuration = new GeneralConfiguration(null);
     IStampyClientLogger logger = new StampyWorkerEventsKustoLogger(configuration);
     logger.WriteInfo(jobRequest, "triggered from queue");
     var executor = ExecutorFactory.GetExecutor(jobRequest, logger);
