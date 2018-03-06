@@ -21,7 +21,7 @@ public class DeploymentExecutor : ExecutorBase
     private StampyResult _stampyResult;
     private StringBuilder _statusMessageBuilder;
     private List<string> _availableDeploymentTemplates;
-    private IStampyClientLogger _logger;
+    private ICloudStampyLogger _logger;
     private List<string> AvailableDeploymentTemplates
     {
         get
@@ -87,7 +87,7 @@ public class DeploymentExecutor : ExecutorBase
         }
     }
 
-    public DeploymentExecutor(StampyCommon.StampyParameters stampyParameters, IStampyClientLogger logger) : base(stampyParameters){
+    public DeploymentExecutor(StampyCommon.CloudStampyParameters stampyParameters, ICloudStampyLogger logger) : base(stampyParameters){
         _stampyResult = new StampyResult();
         _stampyResult.BuildPath = StampyParameters.BuildPath;
         _stampyResult.CloudName = StampyParameters.CloudName;

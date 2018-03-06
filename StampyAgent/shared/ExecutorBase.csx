@@ -11,9 +11,9 @@ using StampyCommon.SchedulerSettings;
 
 public abstract class ExecutorBase
 {
-    protected StampyCommon.StampyParameters StampyParameters {get; private set;}
+    protected StampyCommon.CloudStampyParameters StampyParameters {get; private set;}
 
-    public ExecutorBase(StampyCommon.StampyParameters stampyParameters)
+    public ExecutorBase(StampyCommon.CloudStampyParameters stampyParameters)
     {
         this.StampyParameters = stampyParameters;
     }

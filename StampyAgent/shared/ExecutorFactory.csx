@@ -12,7 +12,7 @@ using StampyCommon.SchedulerSettings;
 
 public static class ExecutorFactory
 {
-    public static ExecutorBase GetExecutor(StampyCommon.StampyParameters stampyParameters, IStampyClientLogger logger){
+    public static ExecutorBase GetExecutor(StampyCommon.CloudStampyParameters stampyParameters, ICloudStampyLogger logger){
         switch (stampyParameters.JobType)
         {
             case StampyJobType.Deploy:
