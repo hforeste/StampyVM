@@ -15,7 +15,14 @@ public static StampyResult Run(StampyCommon.CloudStampyParameters jobRequest, Tr
     logger.WriteInfo(jobRequest, "triggered from queue");
     var executor = ExecutorFactory.GetExecutor(jobRequest, logger);
     logger.WriteInfo(jobRequest, "Start execution for job request");
-    var result = executor.Execute();
+    try
+    {
+        var result = executor.Execute();
+    }catch(Exception ex)
+    {
+        logger.WriteError(jobRequest, $"Error while executing job request", ex);
+        throw;
+    }
     logger.WriteInfo(jobRequest, $"Status: {result.Result.ToString()}");
     return result;
 }
