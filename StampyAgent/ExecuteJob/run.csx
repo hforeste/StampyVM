@@ -1,6 +1,5 @@
 #r "StampyCommon.dll"
 #load "..\shared\ExecutorFactory.csx"
-#load "..\shared\Logger.csx"
 #load "..\shared\StampyResult.csx"
 using System;
 using System.Net;

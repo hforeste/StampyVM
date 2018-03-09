@@ -5,7 +5,6 @@
 //------------------------------------------------------------------------------
 #r "StampyCommon.dll"
 #load "ExecutorBase.csx"
-#load "Logger.csx"
 #load "StampyResult.csx"
 #load "JobResult.csx"
 using System;
@@ -137,14 +136,11 @@ public class DeploymentExecutor : ExecutorBase
         }
 
         if(deployProcess.ExitCode != 0){
-            _stampyResult.Result = JobResult.Failed;
-            _stampyResult.StatusMessage = _statusMessageBuilder.ToString();
-            _logger.WriteInfo(StampyParameters, "Error while executing deployconsole.exe " + _stampyResult.StatusMessage);
             throwException = true;
             exceptionMessage = _stampyResult.StatusMessage;           
+        }else{
+            deployProcess.Dispose();
         }
-
-        deployProcess.Dispose();
 
         if(throwException){
             throw new Exception(exceptionMessage);
@@ -169,7 +165,6 @@ public class DeploymentExecutor : ExecutorBase
     private void ErrorReceived(object sender, DataReceivedEventArgs e){
         if (!string.IsNullOrWhiteSpace(e.Data))
         {
-            Logger.Info(e.Data);
             _statusMessageBuilder.AppendLine(e.Data);
         }
     }
