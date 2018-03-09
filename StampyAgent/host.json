@@ -4,6 +4,7 @@
         "Shared"
     ],
     "queues": {
-        "batchSize": 1
+        "batchSize": 1,
+        "maxDequeueCount": 1
     }
 }

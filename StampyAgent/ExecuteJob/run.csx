@@ -28,6 +28,11 @@ public static StampyResult Run(StampyCommon.CloudStampyParameters jobRequest, Tr
     }catch(Exception ex)
     {
         result = new StampyResult();
+        result.BuildPath = jobRequest.BuildPath;
+        result.CloudName = jobRequest.CloudName;
+        result.DeploymentTemplate = jobRequest.DeploymentTemplate;
+        result.RequestId = jobRequest.RequestId;
+        result.JobId = jobRequest.JobId;
         result.Result = JobResult.Failed;
         exception = ex;
         logger.WriteError(jobRequest, $"Error while executing job request", ex);
@@ -36,9 +41,5 @@ public static StampyResult Run(StampyCommon.CloudStampyParameters jobRequest, Tr
     sw.Stop();
     logger.WriteInfo(jobRequest, $"Status: {result.Result.ToString()}");
     resultsLogger.WriteResult(jobRequest, result.Result.ToString(), (int)sw.Elapsed.TotalMinutes, exception);
-
-    if(exception != null){
-        throw exception;
-    }
     return result;
 }

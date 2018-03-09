@@ -88,10 +88,11 @@ public class DeploymentExecutor : ExecutorBase
 
     public DeploymentExecutor(StampyCommon.CloudStampyParameters stampyParameters, ICloudStampyLogger logger) : base(stampyParameters){
         _stampyResult = new StampyResult();
-        _stampyResult.BuildPath = StampyParameters.BuildPath;
-        _stampyResult.CloudName = StampyParameters.CloudName;
-        _stampyResult.DeploymentTemplate = StampyParameters.DeploymentTemplate;
-        _stampyResult.RequestId = StampyParameters.RequestId;
+        _stampyResult.BuildPath = stampyParameters.BuildPath;
+        _stampyResult.CloudName = stampyParameters.CloudName;
+        _stampyResult.DeploymentTemplate = stampyParameters.DeploymentTemplate;
+        _stampyResult.RequestId = stampyParameters.RequestId;
+        _stampyResult.JobId = stampyParameters.JobId;
         _statusMessageBuilder = new StringBuilder();
         _logger = logger;
     }
