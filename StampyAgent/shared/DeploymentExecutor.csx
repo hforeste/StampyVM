@@ -157,8 +157,10 @@ public class DeploymentExecutor : ExecutorBase
             if(e.Data.Equals($"Deploy to {StampyParameters.CloudName} failed", StringComparison.CurrentCultureIgnoreCase)){
                 _stampyResult.Result = JobResult.Failed;
             }
-            else if(e.Data.Contains("Total Time for Template")){
+            if(e.Data.Contains("Total Time for Template")){
                 _stampyResult.Result = JobResult.Passed;
+            }else if(e.Data.Contains("Total Time wasted")){
+                _stampyResult.Result = JobResult.Failed;
             }
         }
     }
